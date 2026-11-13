@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAKPB04FpsNTTOCBLYELmDwvPolW5aqhS8", // (এটি আপনার স্ক্রিনে কাটা আছে, পুরোটা কপি করবেন)
+    apiKey: "AIzaSyAhK8f7kxo6RcqD-Ng8tWquqci8XE6qcgg", // (এটি আপনার স্ক্রিনে কাটা আছে, পুরোটা কপি করবেন)
     authDomain: "reseller-s-cash-analysis.firebaseapp.com",
     projectId: "reseller-s-cash-analysis",
     storageBucket: "reseller-s-cash-analysis.firebasestorage.app",
