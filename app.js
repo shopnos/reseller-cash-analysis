@@ -1,12 +1,11 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAKPB04FpsNTTOCBLYELmDwvPolW5aqhS8",
+    apiKey: "AIzaSyAKPB04FpsNTTOCBLYELmDwvPolW5aqhS8", // (এটি আপনার স্ক্রিনে কাটা আছে, পুরোটা কপি করবেন)
     authDomain: "reseller-s-cash-analysis.firebaseapp.com",
     projectId: "reseller-s-cash-analysis",
     storageBucket: "reseller-s-cash-analysis.firebasestorage.app",
     messagingSenderId: "350736514918",
     appId: "1:350736514918:web:76d5352b7f2795171652a7"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
