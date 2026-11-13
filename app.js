@@ -1,11 +1,12 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAhK8f7kxo6RcqD-Ng8tWquqci8XE6qcgg", // (এটি আপনার স্ক্রিনে কাটা আছে, পুরোটা কপি করবেন)
+    apiKey: "AIzaSyAhK8f7kxo6RcqD-Ng8tWquqci8XE6qcgg", // আপনার নতুন key
     authDomain: "reseller-s-cash-analysis.firebaseapp.com",
     projectId: "reseller-s-cash-analysis",
     storageBucket: "reseller-s-cash-analysis.firebasestorage.app",
     messagingSenderId: "350736514918",
     appId: "1:350736514918:web:76d5352b7f2795171652a7"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -110,6 +111,15 @@ function renderDropdowns() {
     });
 }
 
+// --- HELPER: DYNAMIC AD COST ---
+// প্রতিটি প্রোডাক্টের বর্তমান মোট অর্ডার সংখ্যা দিয়ে এড কস্ট ভাগ করা হচ্ছে
+function getProductAdCost(productId) {
+    const p = masterData.find(x => x.id === productId);
+    if (!p) return 0;
+    const totalOrders = orderData.filter(o => o.productId === productId).length || 1;
+    return p.adCost / totalOrders;
+}
+
 // --- MASTER DATA CRUD ---
 function renderMaster() {
     const tbody = $('masterTableBody'); tbody.innerHTML = '';
@@ -153,8 +163,7 @@ async function delProd(id) { if(confirm('মুছবেন?')) await db.collect
 function calcAdCost() {
     const p = masterData.find(x => x.id === $('entryProduct').value);
     if(p) { 
-        const totalOrders = orderData.filter(o => o.productId === p.id).length || 1;
-        $('adCost').value = (p.adCost / totalOrders).toFixed(0); 
+        $('adCost').value = getProductAdCost(p.id).toFixed(0); 
         checkWarning(); 
     }
 }
@@ -165,7 +174,7 @@ function checkWarning() {
     const p = masterData.find(x => x.id === $('entryProduct').value);
     const sale = Number($('salePrice').value);
     if(p && sale > 0) {
-        const cost = p.cost + Number($('adCost').value);
+        const cost = p.cost + getProductAdCost(p.id); // লাইভ এড কস্ট
         if(sale < cost) {
             $('warningBanner').style.display = 'block';
             $('warningBanner').innerHTML = `⚠️ সতর্কতা: এই দামে অর্ডার নিলে আপনার <b>৳${(cost - sale).toFixed(0)}</b> লস হবে!`;
@@ -186,10 +195,11 @@ $('orderForm').addEventListener('submit', async (e) => {
     const data = {
         custName: $('custName').value.trim(), custPhone: $('custPhone').value.trim(),
         productId: $('entryProduct').value, salePrice: Number($('salePrice').value),
-        adCost: Number($('adCost').value), deliveryArea: Number($('deliveryArea').value),
+        deliveryArea: Number($('deliveryArea').value),
         status: status, returnPayer: status === 'Returned' ? $('returnPayer').value : 'none',
         timestamp: id ? orderData.find(o => o.id === id).timestamp : timestamp,
         userId: currentUserId
+        // এখানে adCost আর সেভ করা হচ্ছে না, এটি ডাইনামিকভাবে হিসাব হবে
     };
     
     if(id) {
@@ -208,12 +218,15 @@ function renderOrders() {
         const p = masterData.find(prod => prod.id === o.productId);
         let profitText = '-', badgeClass = `badge-${o.status}`;
         
-        if(o.status === 'Delivered') {
-            const profit = o.salePrice - (p.cost + o.adCost);
-            profitText = `<span class="${profit>=0?'text-profit':'text-loss'}" style="font-weight:bold;">৳${profit}</span>`;
-        } else if(o.status === 'Returned') {
-            const loss = o.adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
-            profitText = `<span class="text-loss" style="font-weight:bold;">-৳${loss}</span>`;
+        if(p) {
+            const adCost = getProductAdCost(p.id); // ডাইনামিক এড কস্ট
+            if(o.status === 'Delivered') {
+                const profit = o.salePrice - (p.cost + adCost);
+                profitText = `<span class="${profit>=0?'text-profit':'text-loss'}" style="font-weight:bold;">৳${profit.toFixed(0)}</span>`;
+            } else if(o.status === 'Returned') {
+                const loss = adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
+                profitText = `<span class="text-loss" style="font-weight:bold;">-৳${loss.toFixed(0)}</span>`;
+            }
         }
 
         tbody.innerHTML += `<tr>
@@ -235,7 +248,8 @@ function editOrder(id) {
     $('editOrderId').value = o.id; 
     $('orderDate').value = new Date(o.timestamp).toISOString().split('T')[0]; 
     $('custName').value = o.custName; $('custPhone').value = o.custPhone;
-    $('entryProduct').value = o.productId; $('salePrice').value = o.salePrice; $('adCost').value = o.adCost;
+    $('entryProduct').value = o.productId; $('salePrice').value = o.salePrice; 
+    $('adCost').value = getProductAdCost(o.productId).toFixed(0); // ডাইনামিক এড কস্ট
     $('deliveryArea').value = o.deliveryArea; $('orderStatus').value = o.status; toggleReturn();
     if(o.status === 'Returned') $('returnPayer').value = o.returnPayer;
     $('saveOrderBtn').innerText = 'আপডেট'; $('cancelEditBtn').style.display = 'block'; window.scrollTo(0,0);
@@ -281,13 +295,17 @@ function updateDashboard() {
 
     filtered.forEach(o => {
         const p = masterData.find(x => x.id === o.productId); if(!p) return;
-        adCost += o.adCost;
+        
+        const currentAdCost = getProductAdCost(p.id); // ডাইনামিক এড কস্ট
+        adCost += currentAdCost;
+
         if(o.status === 'Processing') proc++;
         if(o.status === 'Delivered') {
-            deliv++; grossProfit += (o.salePrice - p.cost); net += (o.salePrice - (p.cost + o.adCost)); 
+            deliv++; grossProfit += (o.salePrice - p.cost); net += (o.salePrice - (p.cost + currentAdCost)); 
         }
         if(o.status === 'Returned') {
-            ret++; rVal += o.salePrice; let loss = o.adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
+            ret++; rVal += o.salePrice; 
+            let loss = currentAdCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
             rLoss += loss; net -= loss;
         }
     });
@@ -333,8 +351,9 @@ function drawChart(orders) {
             const od = new Date(o.timestamp);
             if(od.getDate()===d.getDate() && od.getMonth()===d.getMonth()) {
                 const p = masterData.find(x=>x.id===o.productId); if(!p) return;
-                if(o.status==='Delivered') dayNet += (o.salePrice - (p.cost + o.adCost));
-                else if(o.status==='Returned') dayNet -= (o.adCost + (o.returnPayer==='me'?o.deliveryArea:0));
+                const adC = getProductAdCost(p.id); // ডাইনামিক
+                if(o.status==='Delivered') dayNet += (o.salePrice - (p.cost + adC));
+                else if(o.status==='Returned') dayNet -= (adC + (o.returnPayer==='me'?o.deliveryArea:0));
             }
         });
         data.push(dayNet);
@@ -370,10 +389,13 @@ function exportToCSV() {
     orderData.forEach(o => {
         const p = masterData.find(prod => prod.id === o.productId);
         let profit = 0;
-        if(o.status === 'Delivered') profit = o.salePrice - (p.cost + o.adCost);
-        else if(o.status === 'Returned') profit = -(o.adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0));
+        const adC = p ? getProductAdCost(p.id) : 0;
+        
+        if(o.status === 'Delivered' && p) profit = o.salePrice - (p.cost + adC);
+        else if(o.status === 'Returned') profit = -(adC + (o.returnPayer === 'me' ? o.deliveryArea : 0));
+        
         const dateStr = new Date(o.timestamp).toLocaleDateString('en-GB');
-        csvContent += `${dateStr},${o.custName},${o.custPhone},${p?p.name:''},${o.status},${o.salePrice},${o.adCost},${profit}\n`;
+        csvContent += `${dateStr},${o.custName},${o.custPhone},${p?p.name:''},${o.status},${o.salePrice},${adC.toFixed(0)},${profit.toFixed(0)}\n`;
     });
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
