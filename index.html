@@ -74,7 +74,7 @@
         /* Forms */
         .form-group{margin-bottom: 12px; position: relative; z-index: 1;}
         label{display: block; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 4px; font-weight: 600;}
-        input, select{width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: 0.2s;}
+        input, select{width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: 0.2s; font-family: 'Poppins', sans-serif;}
         input:focus, select:focus{border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);}
         input[readonly]{background: rgba(255,255,255,0.05); color: var(--text-muted); cursor: not-allowed;}
         select option { background: var(--bg-color); }
@@ -138,10 +138,6 @@
         /* Warning Banner */
         .warning-banner { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--loss); color: var(--loss); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; text-align: center; font-weight:600;}
         
-        /* Ranking List */
-        .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem; font-weight:600;}
-        .rank-item:last-child { border-bottom: none; }
-
         /* Chart Container */
         .chart-container { position: relative; height: 180px; width: 100%; margin-top: 10px; }
     </style>
@@ -153,7 +149,7 @@
             <h1 id="appTitle">📈 Reseller's Analytics</h1>
         </div>
         <div class="header-btns">
-            <button class="settings-btn" onclick="exportToCSV()" style="color:var(--profit); border-color:var(--profit);">📥 এক্সেল</button>
+            <button class="settings-btn" onclick="triggerExport()" style="color:var(--profit); border-color:var(--profit);">📥 এক্সেল</button>
             <button id="loginBtn" class="settings-btn" onclick="openLoginModal()">🔒 লগইন</button>
             <button id="logoutBtn" class="settings-btn" onclick="logoutUser()" style="display:none; color:var(--loss); border-color:var(--loss);">লগআউট</button>
         </div>
@@ -189,7 +185,7 @@
             <!-- Block 1: Sales & Profit -->
             <h3 style="font-size:0.85rem; color:var(--text-main); margin-bottom:8px;"><span class="icon-anim">💰</span> আয় ও মুনাফা</h3>
             <div class="grid-3" style="margin-bottom:15px">
-                <div class="stat-box"><div class="stat-title">মোট বিক্রি</div><div class="stat-value text-primary" id="dash-sales">৳0</div><div class="stat-sub" id="dash-sales-sub">0 টি ডেলিভারি</div></div>
+                <div class="stat-box"><div class="stat-title">মোট লাভ</div><div class="stat-value text-primary" id="dash-gross-profit">৳0</div><div class="stat-sub" id="dash-gross-sub">ডেলিভারি</div></div>
                 <div class="stat-box"><div class="stat-title">নিট লাভ</div><div class="stat-value" id="dash-net">৳0</div></div>
                 <div class="stat-box" id="margin-box"><div class="stat-title">প্রফিট মার্জিন</div><div class="stat-value" id="dash-margin">0%</div><div class="stat-sub" id="dash-margin-sub">বিনিয়োগ: ৳0</div></div>
             </div>
@@ -200,12 +196,6 @@
                 <div class="stat-box"><div class="stat-title">মোট এড খরচ</div><div class="stat-value text-warning" id="dash-adcost">৳0</div><div class="stat-sub" id="dash-adcost-sub">(0টি অর্ডারের জন্য)</div></div>
                 <div class="stat-box"><div class="stat-title">মোট রিটার্ন চার্জ</div><div class="stat-value text-loss" id="dash-total-return">৳0</div><div class="stat-sub">আপনি দিয়েছেন</div></div>
                 <div class="stat-box"><div class="stat-title">গড় এড কস্ট</div><div class="stat-value text-warning" id="dash-avg-adcost">৳0</div><div class="stat-sub">প্রতি অর্ডার</div></div>
-            </div>
-
-            <!-- Advanced Block: Courier & Supplier -->
-            <div class="grid-2" style="margin-bottom:15px">
-                <div class="stat-box"><div class="stat-title">কুরিয়ার পেন্ডিং ক্যাশ</div><div class="stat-value text-primary" id="dash-courier-pending">৳0</div></div>
-                <div class="stat-box"><div class="stat-title">মোট সাপ্লায়ার খরচ</div><div class="stat-value text-loss" id="dash-supplier-cost">৳0</div></div>
             </div>
 
             <!-- Block 3: Operations -->
@@ -223,18 +213,7 @@
                 <div class="stat-box"><div class="stat-title">ROAS (এড-এর ওপর)</div><div class="stat-value text-profit" id="dash-roas">0.0x</div><div class="stat-sub">১৳ এডে বিক্রি</div></div>
             </div>
 
-            <!-- Block 5: Rankings & Chart -->
-            <div class="grid-2" style="margin-bottom:15px">
-                <div class="card" style="margin-bottom:0;">
-                    <h2 style="font-size:0.9rem;"><span class="icon-anim">🏆</span> টপ লাভজনক</h2>
-                    <div id="topProfitList"></div>
-                </div>
-                <div class="card" style="margin-bottom:0;">
-                    <h2 style="font-size:0.9rem;"><span class="icon-anim">⚠️</span> টপ ক্ষতিকর</h2>
-                    <div id="topLossList"></div>
-                </div>
-            </div>
-
+            <!-- Chart -->
             <div class="card">
                 <h2><span class="icon-anim">📉</span> গত ৭ দিনের লাভ-লস</h2>
                 <div class="chart-container"><canvas id="profitChart"></canvas></div>
@@ -249,12 +228,15 @@
                 <form id="orderForm">
                     <input type="hidden" id="editOrderId">
                     <div class="grid-2">
+                        <div class="form-group"><label>তারিখ</label><input type="date" id="orderDate" required></div>
                         <div class="form-group"><label>কাস্টমার নাম</label><input type="text" id="custName" required></div>
-                        <div class="form-group"><label>মোবাইল</label><input type="tel" id="custPhone" required></div>
                     </div>
-                    <div class="form-group">
-                        <label>প্রোডাক্ট</label>
-                        <select id="entryProduct" required onchange="calcAdCost()"><option value="">-- সিলেক্ট --</option></select>
+                    <div class="grid-2">
+                        <div class="form-group"><label>মোবাইল</label><input type="tel" id="custPhone" required></div>
+                        <div class="form-group">
+                            <label>প্রোডাক্ট</label>
+                            <select id="entryProduct" required onchange="calcAdCost()"><option value="">-- সিলেক্ট --</option></select>
+                        </div>
                     </div>
                     <div class="grid-2">
                         <div class="form-group"><label>বিক্রয় মূল্য (৳)</label><input type="number" id="salePrice" required oninput="checkWarning()"></div>
@@ -429,7 +411,13 @@
         }
 
         // --- INIT ---
-        window.onload = () => { checkAuth(); startListeners(); };
+        window.onload = () => { 
+            checkAuth(); 
+            startListeners(); 
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            $('orderDate').value = today;
+        };
 
         function startListeners() {
             db.collection('products').onSnapshot(snap => {
@@ -511,15 +499,26 @@
             if(localStorage.getItem('analytics_auth') !== 'true') return;
             const id = $('editOrderId').value;
             const status = $('orderStatus').value;
+            
+            // Date handling
+            let selectedDate = $('orderDate').value;
+            if(!selectedDate) selectedDate = new Date().toISOString().split('T')[0];
+            const timestamp = new Date(selectedDate).getTime();
+
             const data = {
                 custName: $('custName').value.trim(), custPhone: $('custPhone').value.trim(),
                 productId: $('entryProduct').value, salePrice: Number($('salePrice').value),
                 adCost: Number($('adCost').value), deliveryArea: Number($('deliveryArea').value),
                 status: status, returnPayer: status === 'Returned' ? $('returnPayer').value : 'none',
-                timestamp: id ? orderData.find(o => o.id === id).timestamp : Date.now()
+                timestamp: id ? orderData.find(o => o.id === id).timestamp : timestamp // If editing, keep original date unless changed
             };
-            if(id) await db.collection('analytics_orders').doc(id).update(data);
-            else await db.collection('analytics_orders').add(data);
+            
+            if(id) {
+                data.timestamp = timestamp; // Update date if changed
+                await db.collection('analytics_orders').doc(id).update(data);
+            } else {
+                await db.collection('analytics_orders').add(data);
+            }
             cancelEdit(); alert('সেভ হয়েছে!');
         });
 
@@ -553,13 +552,24 @@
 
         function editOrder(id) {
             const o = orderData.find(x => x.id === id);
-            $('editOrderId').value = o.id; $('custName').value = o.custName; $('custPhone').value = o.custPhone;
+            $('editOrderId').value = o.id; 
+            $('orderDate').value = new Date(o.timestamp).toISOString().split('T')[0]; // Populate date
+            $('custName').value = o.custName; $('custPhone').value = o.custPhone;
             $('entryProduct').value = o.productId; $('salePrice').value = o.salePrice; $('adCost').value = o.adCost;
             $('deliveryArea').value = o.deliveryArea; $('orderStatus').value = o.status; toggleReturn();
             if(o.status === 'Returned') $('returnPayer').value = o.returnPayer;
             $('saveOrderBtn').innerText = 'আপডেট'; $('cancelEditBtn').style.display = 'block'; window.scrollTo(0,0);
         }
-        function cancelEdit() { $('orderForm').reset(); $('editOrderId').value = ''; $('warningBanner').style.display='none'; $('saveOrderBtn').innerText = 'সেভ করুন'; $('cancelEditBtn').style.display = 'none'; $('returnPayerDiv').style.display='none'; }
+        function cancelEdit() { 
+            $('orderForm').reset(); 
+            $('editOrderId').value = ''; 
+            $('warningBanner').style.display='none'; 
+            $('saveOrderBtn').innerText = 'সেভ করুন'; 
+            $('cancelEditBtn').style.display = 'none'; 
+            $('returnPayerDiv').style.display='none';
+            // Reset date to today
+            $('orderDate').value = new Date().toISOString().split('T')[0];
+        }
         async function delOrder(id) { if(confirm('মুছবেন?')) await db.collection('analytics_orders').doc(id).delete(); }
 
         // --- QUICK STATUS ---
@@ -578,58 +588,69 @@
         // --- DASHBOARD & ANALYTICS ---
         function updateDashboard() {
             const productFilter = $('dashProductSelect').value;
-            const now = Date.now(); const oneDay = 86400000;
+            const now = new Date();
+            now.setHours(0,0,0,0); // Start of today for accurate filtering
 
             let filtered = orderData.filter(o => {
                 if(productFilter !== 'all' && o.productId !== productFilter) return false;
-                if(currentTimeFilter === 'today') return (now - o.timestamp) < oneDay;
-                if(currentTimeFilter === 'week') return (now - o.timestamp) < 7*oneDay;
-                if(currentTimeFilter === 'month') return (now - o.timestamp) < 30*oneDay;
-                return true;
+                
+                const orderDate = new Date(o.timestamp);
+                orderDate.setHours(0,0,0,0);
+
+                if(currentTimeFilter === 'today') {
+                    return orderDate.getTime() === now.getTime();
+                }
+                if(currentTimeFilter === 'week') {
+                    const oneWeekAgo = new Date(now);
+                    oneWeekAgo.setDate(now.getDate() - 7);
+                    return orderDate >= oneWeekAgo;
+                }
+                if(currentTimeFilter === 'month') {
+                    const oneMonthAgo = new Date(now);
+                    oneMonthAgo.setMonth(now.getMonth() - 1);
+                    return orderDate >= oneMonthAgo;
+                }
+                return true; // All time
             });
 
-            let sales=0, net=0, adCost=0, supCost=0, pending=0, rLoss=0, rVal=0;
+            let grossProfit=0, net=0, adCost=0, rLoss=0, rVal=0;
             let proc=0, deliv=0, ret=0;
-            let productProfits = {};
 
             filtered.forEach(o => {
                 const p = masterData.find(x => x.id === o.productId); if(!p) return;
                 adCost += o.adCost;
-                if(!productProfits[p.id]) productProfits[p.id] = { name: p.name, profit: 0 };
 
                 if(o.status === 'Processing') proc++;
                 if(o.status === 'Delivered') {
-                    deliv++; sales += o.salePrice; supCost += p.cost; pending += o.salePrice;
-                    let oNet = o.salePrice - (p.cost + o.adCost);
-                    net += oNet; productProfits[p.id].profit += oNet;
+                    deliv++; 
+                    grossProfit += (o.salePrice - p.cost); // Gross Profit (Sale - Cost)
+                    net += (o.salePrice - (p.cost + o.adCost)); // Net Profit (Sale - Cost - Ad)
                 }
                 if(o.status === 'Returned') {
                     ret++; rVal += o.salePrice;
                     let loss = o.adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
-                    rLoss += loss; net -= loss; productProfits[p.id].profit -= loss;
+                    rLoss += loss; net -= loss;
                 }
             });
 
-            const totalInv = adCost + supCost;
-            const margin = totalInv > 0 ? ((net / totalInv)*100).toFixed(1) : 0;
-            const roas = adCost > 0 ? (sales / adCost).toFixed(2) : 0;
+            const totalInv = adCost + (grossProfit > 0 ? grossProfit : 0); // Rough estimate for margin base
+            const margin = adCost > 0 ? ((net / adCost) * 100).toFixed(1) : 0; // Margin on Ad spend is more realistic here
+            const roas = adCost > 0 ? (grossProfit / adCost).toFixed(2) : 0; // ROAS based on Gross Profit
             const successRate = filtered.length > 0 ? ((deliv / filtered.length)*100).toFixed(0) : 0;
             const avgAdCost = filtered.length > 0 ? (adCost / filtered.length).toFixed(0) : 0;
 
             // Update UI
-            $('dash-sales').innerText = '৳'+sales.toLocaleString();
-            $('dash-sales-sub').innerText = `${deliv} টি ডেলিভারি`;
+            $('dash-gross-profit').innerText = '৳'+grossProfit.toLocaleString();
+            $('dash-gross-sub').innerText = `${deliv} টি ডেলিভারি`;
             
             $('dash-net').innerText = '৳'+net.toLocaleString();
             $('dash-net').className = net>=0 ? 'stat-value text-profit glow-profit' : 'stat-value text-loss glow-loss';
-            $('dash-net').style.fontSize = '1.2rem'; // Make it slightly bigger
+            $('dash-net').style.fontSize = '1.2rem';
             
             $('dash-margin').innerText = margin+'%'; 
             $('dash-margin').className = margin>=0 ? 'stat-value text-profit' : 'stat-value text-loss';
             $('margin-box').style.border = margin>=0 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)';
-            $('dash-margin-sub').innerText = `বিনিয়োগ: ৳${totalInv.toLocaleString()}`;
-            
-            $('dash-courier-pending').innerText = '৳'+pending.toLocaleString();
+            $('dash-margin-sub').innerText = `বিনিয়োগ: ৳${adCost.toLocaleString()}`; // Margin based on Ad Spend
             
             $('dash-adcost').innerText = '৳'+adCost.toLocaleString(); 
             $('dash-adcost-sub').innerText = `(${filtered.length}টি অর্ডারের জন্য)`;
@@ -637,13 +658,11 @@
             $('dash-total-return').innerText = '৳'+rLoss.toLocaleString();
             $('dash-avg-adcost').innerText = '৳'+avgAdCost;
             
-            $('dash-supplier-cost').innerText = '৳'+supCost.toLocaleString(); 
-            
             $('dash-processing').innerText = proc; 
             $('dash-processing-amt').innerText = '৳' + (filtered.filter(o=>o.status==='Processing').reduce((a,b)=>a+b.salePrice,0)).toLocaleString();
             
             $('dash-delivered').innerText = deliv; 
-            $('dash-delivered-amt').innerText = '৳' + sales.toLocaleString();
+            $('dash-delivered-amt').innerText = '৳' + (filtered.filter(o=>o.status==='Delivered').reduce((a,b)=>a+b.salePrice,0)).toLocaleString();
             
             $('dash-returned').innerText = ret;
             $('dash-returned-amt').innerText = '৳' + rVal.toLocaleString();
@@ -651,24 +670,7 @@
             $('dash-success-rate').innerText = successRate + '%';
             $('dash-roas').innerText = roas + 'x';
 
-            updateRankings(productProfits);
             drawChart(filtered);
-        }
-
-        function updateRankings(profitsObj) {
-            let arr = Object.values(profitsObj);
-            arr.sort((a,b) => b.profit - a.profit);
-            
-            let topHtml = '', lossHtml = '';
-            arr.slice(0, 3).forEach(p => {
-                topHtml += `<div class="rank-item"><span>${p.name}</span><span class="text-profit">৳${p.profit.toLocaleString()}</span></div>`;
-            });
-            arr.slice(-3).reverse().forEach(p => {
-                if(p.profit < 0) lossHtml += `<div class="rank-item"><span>${p.name}</span><span class="text-loss">৳${p.profit.toLocaleString()}</span></div>`;
-            });
-
-            $('topProfitList').innerHTML = topHtml || '<div style="font-size:0.8rem; color:var(--text-muted);">ডেটা নেই</div>';
-            $('topLossList').innerHTML = lossHtml || '<div style="font-size:0.8rem; color:var(--text-muted);">কোনো লস প্রোডাক্ট নেই</div>';
         }
 
         function drawChart(orders) {
@@ -737,6 +739,28 @@
             link.click();
             document.body.removeChild(link);
         }
+
+        // ফাংশনগুলো গ্লোবাল করা হলো যাতে HTML থেকে কল করা যায়
+        window.triggerExport = exportToCSV;
+        window.openLoginModal = openLoginModal;
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+        window.switchTab = switchTab;
+        window.setTimeFilter = setTimeFilter;
+        window.editProd = editProd;
+        window.cancelProdEdit = cancelProdEdit;
+        window.delProd = delProd;
+        window.calcAdCost = calcAdCost;
+        window.toggleReturn = toggleReturn;
+        window.checkWarning = checkWarning;
+        window.editOrder = editOrder;
+        window.cancelEdit = cancelEdit;
+        window.delOrder = delOrder;
+        window.openQuickStatus = openQuickStatus;
+        window.toggleQsReturn = toggleQsReturn;
+        window.saveQuickStatus = saveQuickStatus;
+        window.updateDashboard = updateDashboard;
+        window.openStatusList = openStatusList;
     </script>
 </body>
 </html>
