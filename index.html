@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reseller's Analytics - Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js লাইব্রেরি গ্রাফের জন্য -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -32,7 +34,6 @@
             overflow-x: hidden;
         }
 
-        /* Header */
         header {
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(12px);
@@ -47,23 +48,23 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
         .btn-login { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: block; }
-        .btn-login:hover { background: var(--primary-hover); }
         .btn-logout { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: none; }
 
-        /* Container */
         .container { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
 
-        /* Navigation */
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0 env(safe-area-inset-bottom); z-index: 1000; }
         .nav-item { color: var(--text-muted); text-align: center; font-size: 0.75rem; cursor: pointer; padding: 5px 10px; transition: 0.3s; font-weight: 500; }
         .nav-item.active { color: var(--primary); font-weight: 700; transform: translateY(-2px); }
         .nav-item.locked { display: none; }
 
-        /* Cards */
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
-        .card h2 { font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--text-main); font-weight: 600; }
+        .card h2 { font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--text-main); font-weight: 600; display: flex; justify-content: space-between; align-items: center;}
 
-        /* Forms */
+        /* Time Filter Tabs */
+        .time-filters { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .time-filters button { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+        .time-filters button.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
         input, select { width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 15px; color: var(--text-main); font-size: 0.95rem; outline: none; transition: 0.2s; }
@@ -74,96 +75,90 @@
         button[type="submit"] { width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4); }
 
-        /* Grids */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-        /* Stat Boxes */
         .stat-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px 10px; text-align: center; transition: 0.2s; }
         .stat-box.clickable { cursor: pointer; }
         .stat-box.clickable:hover { background: rgba(255, 255, 255, 0.08); transform: translateY(-2px); border-color: var(--primary); }
         
         .stat-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
         .stat-value { font-size: 1.2rem; font-weight: 700; margin-top: 5px; }
-        .stat-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; }
         
         .text-success { color: var(--success); }
         .text-danger { color: var(--danger); }
         .text-warning { color: var(--warning); }
         .text-primary { color: var(--primary); }
+        .text-info { color: #38bdf8; }
 
-        /* Tab Content */
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Warning Banner */
         .warning-banner { display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 15px; text-align: center; }
 
-        /* Login Overlay */
         .login-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
         .login-overlay.open { display: flex; }
         .login-box { background: var(--card-bg); padding: 30px 20px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; border: 1px solid var(--border-color); backdrop-filter: blur(10px); }
         .login-box h2 { color: var(--text-main); margin-bottom: 10px; }
-        .login-box p { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; }
 
-        /* Modal for Lists */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; width: 100%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
         .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
-        .modal-header h3 { font-size: 1.1rem; color: var(--text-main); }
         .close-btn { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
         .modal-body { padding: 0; overflow-y: auto; }
         
-        /* List Items */
         .list-item { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .list-item:last-child { border-bottom: none; }
         .list-item-info h4 { font-size: 0.95rem; color: var(--text-main); margin-bottom: 4px; }
         .list-item-info p { font-size: 0.75rem; color: var(--text-muted); }
         .list-item-price { font-weight: 700; font-size: 0.95rem; }
-
-        /* Read Only Notice */
         .readonly-notice { text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 10px; border-top: 1px solid var(--border-color); background: rgba(255,255,255,0.02); }
 
+        .chart-container { position: relative; height: 200px; width: 100%; margin-top: 15px; }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr 1fr; }
+            .stat-value { font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
     <header>
-        <div class="brand">
-            <span id="appTitle">Reseller's Analytics</span>
-        </div>
+        <div class="brand"><span id="appTitle">Reseller's Analytics</span></div>
         <div>
             <button id="loginBtn" class="btn-login" onclick="openLoginModal()">লগইন</button>
             <button id="logoutBtn" class="btn-logout" onclick="logoutUser()">লগআউট</button>
         </div>
     </header>
 
-    <!-- Login Modal -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
             <h2>অ্যাডমিন লগইন 🔒</h2>
-            <p>ডেটা এডিট করতে মোবাইল নম্বর দিন</p>
+            <p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">ডেটা এডিট করতে মোবাইল নম্বর দিন</p>
             <input type="tel" id="loginPhone" placeholder="01XXXXXXXXX" style="text-align:center; margin-bottom:15px;">
             <button type="submit" onclick="loginUser()">প্রবেশ করুন</button>
         </div>
     </div>
 
-    <!-- Main Container -->
     <main class="container">
         
-        <!-- ==================== TAB 1: DASHBOARD (PUBLIC) ==================== -->
+        <!-- ==================== TAB 1: ADVANCED DASHBOARD ==================== -->
         <div id="tab-dashboard" class="tab-content active">
+            
+            <div class="time-filters">
+                <button class="active" onclick="setTimeFilter('all', this)">সব সময়</button>
+                <button onclick="setTimeFilter('today', this)">আজ</button>
+                <button onclick="setTimeFilter('week', this)">এই সপ্তাহ</button>
+                <button onclick="setTimeFilter('month', this)">এই মাস</button>
+            </div>
+
             <div class="card">
-                <h2>📊 সারসংক্ষেপ (Overview)</h2>
-                <div class="form-group">
-                    <select id="dashProductSelect">
-                        <option value="all">সামগ্রিক হিসাব (All Products)</option>
-                    </select>
-                </div>
-                <div class="grid-2" style="margin-bottom:15px;">
+                <h2>📊 আর্থিক সারসংক্ষেপ</h2>
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div class="stat-box">
                         <div class="stat-title">মোট বিক্রি (Sales)</div>
                         <div class="stat-value text-primary" id="dash-sales">৳0</div>
@@ -175,12 +170,26 @@
                 </div>
                 <div class="grid-2">
                     <div class="stat-box">
+                        <div class="stat-title">প্রফিট মার্জিন</div>
+                        <div class="stat-value" id="dash-margin">0%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-title">কুরিয়ার পেন্ডিং ক্যাশ</div>
+                        <div class="stat-value text-info" id="dash-courier-pending">৳0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💸 খরচের বিবরণ</h2>
+                <div class="grid-2">
+                    <div class="stat-box">
                         <div class="stat-title">মোট এড খরচ</div>
                         <div class="stat-value text-warning" id="dash-adcost">৳0</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-title">প্রফিট মার্জিন</div>
-                        <div class="stat-value" id="dash-margin">0%</div>
+                        <div class="stat-title">মোট সাপ্লায়ার খরচ</div>
+                        <div class="stat-value text-danger" id="dash-supplier-cost">৳0</div>
                     </div>
                 </div>
             </div>
@@ -202,6 +211,14 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <h2>📉 গত ৭ দিনের লাভ-লসের ট্রেন্ড</h2>
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+
         </div>
 
         <!-- ==================== TAB 2: ORDER ENTRY (PROTECTED) ==================== -->
@@ -211,30 +228,16 @@
                 <div id="warningBanner" class="warning-banner">সতর্কতা: এই দামে অর্ডার নিলে আপনার লস হবে!</div>
                 <form id="orderForm">
                     <div class="grid-2">
-                        <div class="form-group">
-                            <label>কাস্টমার নাম</label>
-                            <input type="text" id="custName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>মোবাইল</label>
-                            <input type="tel" id="custPhone" required>
-                        </div>
+                        <div class="form-group"><label>কাস্টমার নাম</label><input type="text" id="custName" required></div>
+                        <div class="form-group"><label>মোবাইল</label><input type="tel" id="custPhone" required></div>
                     </div>
                     <div class="form-group">
                         <label>প্রোডাক্ট</label>
-                        <select id="entryProduct" required onchange="calcAdCost()">
-                            <option value="">-- সিলেক্ট করুন --</option>
-                        </select>
+                        <select id="entryProduct" required onchange="calcAdCost()"><option value="">-- সিলেক্ট করুন --</option></select>
                     </div>
                     <div class="grid-2">
-                        <div class="form-group">
-                            <label>বিক্রয় মূল্য (৳)</label>
-                            <input type="number" id="salePrice" required oninput="checkEarlyWarning()">
-                        </div>
-                        <div class="form-group">
-                            <label>এড কস্ট (৳)</label>
-                            <input type="number" id="adCost" readonly>
-                        </div>
+                        <div class="form-group"><label>বিক্রয় মূল্য (৳)</label><input type="number" id="salePrice" required oninput="checkEarlyWarning()"></div>
+                        <div class="form-group"><label>এড কস্ট (৳)</label><input type="number" id="adCost" readonly></div>
                     </div>
                     <button type="submit">সেভ করুন</button>
                 </form>
@@ -246,19 +249,10 @@
             <div class="card">
                 <h2>🏷️ নতুন প্রোডাক্ট</h2>
                 <form id="productForm">
-                    <div class="form-group">
-                        <label>প্রোডাক্ট নাম</label>
-                        <input type="text" id="prodName" required>
-                    </div>
+                    <div class="form-group"><label>প্রোডাক্ট নাম</label><input type="text" id="prodName" required></div>
                     <div class="grid-2">
-                        <div class="form-group">
-                            <label>ক্রয়মূল্য (৳)</label>
-                            <input type="number" id="prodCost" required>
-                        </div>
-                        <div class="form-group">
-                            <label>মোট এড খরচ (৳)</label>
-                            <input type="number" id="prodAdCost" required>
-                        </div>
+                        <div class="form-group"><label>ক্রয়মূল্য (৳)</label><input type="number" id="prodCost" required></div>
+                        <div class="form-group"><label>মোট এড খরচ (৳)</label><input type="number" id="prodAdCost" required></div>
                     </div>
                     <button type="submit">প্রোডাক্ট যুক্ত করুন</button>
                 </form>
@@ -267,29 +261,20 @@
 
     </main>
 
-    <!-- Navigation Bar -->
     <div class="nav-bar">
         <div class="nav-item active" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', this)">📊 ড্যাশবোর্ড</div>
-        <!-- These tabs will be hidden by default until logged in -->
         <div id="nav-entry" class="nav-item locked" data-tab="tab-entry" onclick="switchTab('tab-entry', this)">📝 অর্ডার এন্ট্রি</div>
         <div id="nav-master" class="nav-item locked" data-tab="tab-master" onclick="switchTab('tab-master', this)">🏷️ মাস্টার ডাটা</div>
     </div>
 
-    <!-- Status List Modal (Public View) -->
     <div id="statusModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">অর্ডার লিস্ট</h3>
-                <button class="close-btn" onclick="closeStatusModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalListContainer">
-                <!-- List items will be injected here -->
-            </div>
+            <div class="modal-header"><h3 id="modalTitle">অর্ডার লিস্ট</h3><button class="close-btn" onclick="closeStatusModal()">&times;</button></div>
+            <div class="modal-body" id="modalListContainer"></div>
             <div class="readonly-notice">🔒 সম্পাদনা করতে লগইন করুন</div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -309,78 +294,59 @@
         let masterData = [];
         let orderData = [];
         let currentStatusFilter = '';
+        let currentTimeFilter = 'all'; 
+        let profitChartInstance = null;
         const $ = id => document.getElementById(id);
 
-        // --- AUTHENTICATION LOGIC ---
+        // --- AUTH ---
         function checkAuthStatus() {
             const isLoggedIn = localStorage.getItem('analytics_auth') === 'true';
-            
             if (isLoggedIn) {
-                $('loginBtn').style.display = 'none';
-                $('logoutBtn').style.display = 'block';
-                $('nav-entry').classList.remove('locked');
-                $('nav-master').classList.remove('locked');
+                $('loginBtn').style.display = 'none'; $('logoutBtn').style.display = 'block';
+                $('nav-entry').classList.remove('locked'); $('nav-master').classList.remove('locked');
             } else {
-                $('loginBtn').style.display = 'block';
-                $('logoutBtn').style.display = 'none';
-                $('nav-entry').classList.add('locked');
-                $('nav-master').classList.add('locked');
-                
+                $('loginBtn').style.display = 'block'; $('logoutBtn').style.display = 'none';
+                $('nav-entry').classList.add('locked'); $('nav-master').classList.add('locked');
                 if($('tab-entry').classList.contains('active') || $('tab-master').classList.contains('active')) {
                     switchTab('tab-dashboard', document.querySelector('.nav-item[data-tab="tab-dashboard"]'));
                 }
             }
         }
-
         function openLoginModal() { $('loginOverlay').classList.add('open'); }
-        window.openLoginModal = openLoginModal;
-
         function loginUser() {
             const phone = $('loginPhone').value.trim();
             if(phone.length < 11) return alert("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন।");
-            
             localStorage.setItem('analytics_auth', 'true');
-            $('loginOverlay').classList.remove('open');
-            checkAuthStatus();
-            alert("সফলভাবে লগইন হয়েছে!");
+            $('loginOverlay').classList.remove('open'); checkAuthStatus();
         }
-        window.loginUser = loginUser;
+        function logoutUser() { localStorage.removeItem('analytics_auth'); checkAuthStatus(); }
 
-        function logoutUser() {
-            localStorage.removeItem('analytics_auth');
-            checkAuthStatus();
-            alert("লগআউট হয়েছে!");
-        }
-        window.logoutUser = logoutUser;
-
-        // --- NAVIGATION ---
+        // --- NAV & FILTERS ---
         function switchTab(tabId, element) {
-            const isLoggedIn = localStorage.getItem('analytics_auth') === 'true';
-            if(!isLoggedIn && (tabId === 'tab-entry' || tabId === 'tab-master')) {
-                alert("এই পেজে ঢুকতে লগইন করুন!");
-                openLoginModal();
-                return;
+            if(localStorage.getItem('analytics_auth') !== 'true' && (tabId === 'tab-entry' || tabId === 'tab-master')) {
+                alert("এই পেজে ঢুকতে লগইন করুন!"); openLoginModal(); return;
             }
-
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            $(tabId).classList.add('active');
-            element.classList.add('active');
+            $(tabId).classList.add('active'); element.classList.add('active');
         }
-        window.switchTab = switchTab;
 
-        // --- INIT & DATA FETCHING ---
-        window.onload = () => {
-            checkAuthStatus();
-            initApp();
-        };
+        function setTimeFilter(filter, btn) {
+            currentTimeFilter = filter;
+            document.querySelectorAll('.time-filters button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateDashboard();
+        }
+
+        // --- INIT ---
+        window.onload = () => { checkAuthStatus(); initApp(); };
 
         function initApp() {
             db.collection('products').onSnapshot(snap => {
                 masterData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderProducts();
+                updateDashboard();
             });
-
             db.collection('analytics_orders').onSnapshot(snap => {
                 orderData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 updateDashboard();
@@ -389,45 +355,117 @@
 
         // --- DASHBOARD CALCULATIONS ---
         function updateDashboard() {
-            let totalSales = 0, totalNet = 0, totalAdCost = 0;
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            
+            let filteredOrders = orderData.filter(o => {
+                if(currentTimeFilter === 'all') return true;
+                if(currentTimeFilter === 'today') {
+                    const orderDate = new Date(o.timestamp);
+                    const today = new Date();
+                    return orderDate.getDate() === today.getDate() && orderDate.getMonth() === today.getMonth() && orderDate.getFullYear() === today.getFullYear();
+                }
+                if(currentTimeFilter === 'week') return (now - o.timestamp) <= (7 * oneDay);
+                if(currentTimeFilter === 'month') return (now - o.timestamp) <= (30 * oneDay);
+            });
+
+            let totalSales = 0, totalNet = 0, totalAdCost = 0, totalSupplierCost = 0, courierPending = 0;
             let processing = 0, delivered = 0, returned = 0;
 
-            orderData.forEach(o => {
+            filteredOrders.forEach(o => {
                 const product = masterData.find(p => p.id === o.productId);
                 if(!product) return;
 
-                if(o.status === 'Processing') processing++;
-                if(o.status === 'Delivered') {
+                totalAdCost += o.adCost;
+
+                if(o.status === 'Processing') {
+                    processing++;
+                } else if(o.status === 'Delivered') {
                     delivered++;
                     totalSales += o.salePrice;
+                    totalSupplierCost += product.cost;
                     totalNet += (o.salePrice - (product.cost + o.adCost));
+                    courierPending += o.salePrice; 
+                } else if(o.status === 'Returned') {
+                    returned++;
                 }
-                if(o.status === 'Returned') returned++;
-                
-                totalAdCost += o.adCost;
             });
 
-            const margin = totalAdCost > 0 ? ((totalNet / totalAdCost) * 100).toFixed(1) : 0;
+            const totalInvestment = totalAdCost + totalSupplierCost;
+            const margin = totalInvestment > 0 ? ((totalNet / totalInvestment) * 100).toFixed(1) : 0;
 
-            $('dash-sales').innerText = '৳' + totalSales;
-            $('dash-net').innerText = '৳' + totalNet;
+            $('dash-sales').innerText = '৳' + totalSales.toLocaleString();
+            $('dash-net').innerText = '৳' + totalNet.toLocaleString();
             $('dash-net').className = totalNet >= 0 ? 'stat-value text-success' : 'stat-value text-danger';
-            $('dash-adcost').innerText = '৳' + totalAdCost;
+            $('dash-adcost').innerText = '৳' + totalAdCost.toLocaleString();
+            $('dash-supplier-cost').innerText = '৳' + totalSupplierCost.toLocaleString();
+            $('dash-courier-pending').innerText = '৳' + courierPending.toLocaleString();
             $('dash-margin').innerText = margin + '%';
             
             $('dash-processing').innerText = processing;
             $('dash-delivered').innerText = delivered;
             $('dash-returned').innerText = returned;
+
+            updateChart(filteredOrders);
+        }
+
+        // --- CHART.JS LOGIC ---
+        function updateChart(orders) {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            let labels = [];
+            let data = [];
+            
+            for(let i=6; i>=0; i--) {
+                const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+                const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                labels.push(dateStr);
+                
+                let dayProfit = 0;
+                orders.forEach(o => {
+                    const oDate = new Date(o.timestamp);
+                    if(oDate.getDate() === d.getDate() && oDate.getMonth() === d.getMonth()) {
+                        if(o.status === 'Delivered') {
+                            const p = masterData.find(prod => prod.id === o.productId);
+                            if(p) dayProfit += (o.salePrice - (p.cost + o.adCost));
+                        }
+                    }
+                });
+                data.push(dayProfit);
+            }
+
+            if(profitChartInstance) profitChartInstance.destroy();
+
+            profitChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'দৈনিক লাভ (৳)',
+                        data: data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
         }
 
         // --- PUBLIC STATUS LIST MODAL ---
         function openStatusList(status) {
-            currentStatusFilter = status;
             $('modalTitle').innerText = status + " অর্ডার লিস্ট";
-            
-            const container = $('modalListContainer');
-            container.innerHTML = '';
-
+            const container = $('modalListContainer'); container.innerHTML = '';
             const filteredOrders = orderData.filter(o => o.status === status);
 
             if(filteredOrders.length === 0) {
@@ -435,47 +473,33 @@
             } else {
                 filteredOrders.forEach(o => {
                     const product = masterData.find(p => p.id === o.productId);
-                    const pName = product ? product.name : 'Unknown';
-
                     let colorClass = status === 'Delivered' ? 'text-success' : (status === 'Returned' ? 'text-danger' : 'text-warning');
-
                     container.innerHTML += `
                         <div class="list-item">
                             <div class="list-item-info">
-                                <h4>${o.custName} <span style="font-size:0.7rem; color:var(--text-muted)">(${pName})</span></h4>
+                                <h4>${o.custName} <span style="font-size:0.7rem; color:var(--text-muted)">(${product ? product.name : 'Unknown'})</span></h4>
                                 <p>${o.custPhone}</p>
                             </div>
                             <div class="list-item-price ${colorClass}">৳${o.salePrice}</div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
             $('statusModal').classList.add('open');
         }
-        window.openStatusList = openStatusList;
-
         function closeStatusModal() { $('statusModal').classList.remove('open'); }
-        window.closeStatusModal = closeStatusModal;
-
 
         // --- PROTECTED FUNCTIONS ---
         function renderProducts() {
             const select = $('entryProduct');
             select.innerHTML = '<option value="">-- সিলেক্ট করুন --</option>';
-            masterData.forEach(p => {
-                select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-            });
+            masterData.forEach(p => { select.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
         }
 
         function calcAdCost() {
             const prodId = $('entryProduct').value;
             const product = masterData.find(p => p.id === prodId);
-            if(product) {
-                $('adCost').value = product.adCost; 
-                checkEarlyWarning();
-            }
+            if(product) { $('adCost').value = product.adCost; checkEarlyWarning(); }
         }
-        window.calcAdCost = calcAdCost;
 
         function checkEarlyWarning() {
             const prodId = $('entryProduct').value;
@@ -488,33 +512,25 @@
                 if(salePrice < totalCost) {
                     warning.style.display = 'block';
                     warning.innerHTML = `⚠️ সতর্কতা: এই দামে অর্ডার নিলে আপনার <b>৳${totalCost - salePrice}</b> লস হবে!`;
-                } else {
-                    warning.style.display = 'none';
-                }
-            } else {
-                warning.style.display = 'none';
-            }
+                } else { warning.style.display = 'none'; }
+            } else { warning.style.display = 'none'; }
         }
-        window.checkEarlyWarning = checkEarlyWarning;
 
         $('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(localStorage.getItem('analytics_auth') !== 'true') return alert("অননুমোদিত!");
-            
-            const name = $('prodName').value.trim();
-            const cost = Number($('prodCost').value);
-            const adCost = Number($('prodAdCost').value);
-
-            await db.collection('products').add({ name, cost, adCost });
-            $('productForm').reset();
-            alert('প্রোডাক্ট সেভ হয়েছে!');
+            await db.collection('products').add({ 
+                name: $('prodName').value.trim(), 
+                cost: Number($('prodCost').value), 
+                adCost: Number($('prodAdCost').value) 
+            });
+            $('productForm').reset(); alert('প্রোডাক্ট সেভ হয়েছে!');
         });
 
         $('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(localStorage.getItem('analytics_auth') !== 'true') return alert("অননুমোদিত!");
-
-            const newOrder = {
+            await db.collection('analytics_orders').add({
                 custName: $('custName').value.trim(),
                 custPhone: $('custPhone').value.trim(),
                 productId: $('entryProduct').value,
@@ -522,12 +538,8 @@
                 adCost: Number($('adCost').value),
                 status: 'Processing',
                 timestamp: Date.now()
-            };
-
-            await db.collection('analytics_orders').add(newOrder);
-            $('orderForm').reset();
-            $('warningBanner').style.display = 'none';
-            alert('অর্ডার সেভ হয়েছে!');
+            });
+            $('orderForm').reset(); $('warningBanner').style.display = 'none'; alert('অর্ডার সেভ হয়েছে!');
         });
 
     </script>
