@@ -4,117 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reseller's Analytics - Premium</title>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg-color: #0f172a; --card-bg: rgba(30, 41, 59, 0.7);
-            --border-color: rgba(255, 255, 255, 0.1); --text-main: #f8fafc;
-            --text-muted: #94a3b8; --primary: #8b5cf6; --primary-hover: #7c3aed;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --accent: #3b82f6; --info: #38bdf8;
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Hind Siliguri', 'Segoe UI', sans-serif}
+        :root{
+            --plum:#4b1f62; --plum2:#713b87; --pink:#e84f9a; --pink2:#ff83b9;
+            --rose:#fff0f6; --lilac:#f3eaff; --ink:#392344; --muted:#806b89;
+            --line:#f1dce9; --paper:#fffafc; --green:#27a47b; --red:#e34e81; --orange:#e7a43c; --blue:#3498db;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', 'Hind Siliguri', sans-serif; }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 25%),
-                              radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.15), transparent 25%);
-            color: var(--text-main); min-height: 100vh; padding-bottom: 80px; overflow-x: hidden;
+        
+        body{
+            background-color: #fffafc;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e84f9a' fill-opacity='0.06'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            radial-gradient(circle at 10% 5%, #ffe8f3 0, transparent 28%),
+            radial-gradient(circle at 95% 22%, #eee4ff 0, transparent 27%),
+            linear-gradient(150deg, #fff9fc, #f8f2ff 58%, #fff8f0);
+            color: var(--ink);
+            padding-bottom: 80px;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
-
-        header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .brand { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
-        .btn-login { background: var(--primary); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-        .btn-logout { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: none; }
-        .btn-export { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; margin-left: 10px; }
-
-        .container { max-width: 900px; margin: 0 auto; padding: 15px; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 8px; text-align: center; position: relative; }
-        .stat-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; }
-        .stat-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 3px; }
         
-        .text-success { color: var(--success); } .text-danger { color: var(--danger); }
-        .text-warning { color: var(--warning); } .text-primary { color: var(--primary); }
-        .text-info { color: var(--info); }
-
-        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 15px; margin-bottom: 15px; }
-        .card h2 { font-size: 1rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-
-        .filter-row { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
-        .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 10px; border-radius: 15px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .form-select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--text-main); font-size: 0.85rem; margin-bottom: 10px; outline: none; }
-
-        .form-group { margin-bottom: 10px; }
-        label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-        input, select { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--text-main); font-size: 0.9rem; outline: none; }
-        input:focus, select:focus { border-color: var(--primary); }
-        input[readonly] { background: rgba(255,255,255,0.05); color: var(--text-muted); }
-        select option { background: var(--bg-color); }
+        /* Header */
+        header{
+            background: linear-gradient(120deg, #3e1758, #743477 55%, #d94f9a);
+            padding: 15px;
+            box-shadow: 0 8px 25px #63255a2b;
+            border-radius: 0 0 24px 24px;
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            color: white;
+        }
+        .brand-area{display: flex; align-items: center; gap: 10px;}
+        .brand-area h1{font-size: 1.15rem; font-weight: 700; text-shadow: 0 2px 8px #32133d55;}
+        .header-btns{display: flex; gap: 8px;}
+        .settings-btn{background: #ffffff20; border: 1px solid #ffffff70; color: white; border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-weight:600;}
+        .settings-btn:hover{background: #ffffff40;}
         
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* Auth Screen */
+        .auth-overlay{position: fixed; inset: 0; z-index: 4000; background: linear-gradient(150deg, #fff9fc, #f8f2ff); display: none; align-items: center; justify-content: center; padding: 20px;}
+        .auth-overlay.open { display: flex; }
+        .auth-card{background: var(--paper); border: 1.5px solid var(--line); border-radius: 20px; padding: 30px 20px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 10px 30px #60225a15;}
+        .auth-card h2{color: var(--plum); margin-bottom: 8px; font-size: 1.5rem;}
+        .auth-card p{color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;}
+        .auth-card input{width: 100%; background: #fffafd; border: 1.5px solid var(--line); border-radius: 12px; padding: 14px; color: var(--ink); font-size: 1rem; margin-bottom: 15px; text-align: center; outline: none; transition: 0.2s;}
+        .auth-card input:focus{border-color: var(--pink); box-shadow: 0 0 0 3px #fce1ef;}
+        .auth-card button{width: 100%; background: linear-gradient(110deg, #e84f9a, #a64fc2); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px #d84d9830; transition: 0.2s;}
         
-        button[type="submit"] { width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 8px; padding: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 5px; }
-
-        .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
-        th { background: rgba(255,255,255,0.03); padding: 10px; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        td { padding: 10px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        tr:last-child td { border-bottom: none; }
+        /* Main Container */
+        .container{max-width: 760px; margin: auto; padding: 15px;}
         
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 600; cursor: pointer; color: white; display: inline-block; }
-        .badge-Processing { background: var(--warning); }
-        .badge-Delivered { background: var(--success); }
-        .badge-Returned { background: var(--danger); }
-
-        .action-btn { background: none; border: none; font-size: 1rem; cursor: pointer; padding: 2px 5px; }
+        /* Filters */
+        .filter-row{display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px;}
+        .filter-btn{background: #fff; border: 1.5px solid var(--line); color: var(--muted); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; font-weight:600; transition:0.2s;}
+        .filter-btn.active{background: var(--pink); color: white; border-color: var(--pink);}
         
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0 env(safe-area-inset-bottom); z-index: 1000; }
-        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.75rem; cursor: pointer; font-weight: 500; }
-        .nav-item.active { color: var(--primary); font-weight: 700; }
-        .nav-item.locked { display: none; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 15px; }
-        .modal-overlay.open { display: flex; }
-        .modal-content { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 400px; max-height: 80vh; display: flex; flex-direction: column; }
-        .modal-header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
-        .modal-body { padding: 15px; overflow-y: auto; }
+        .form-select { width: 100%; background: #fffafd; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; color: var(--ink); font-size: 0.95rem; margin-bottom: 15px; outline: none; font-weight:600;}
         
-        .warning-banner { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: var(--danger); padding: 8px; border-radius: 6px; font-size: 0.75rem; margin-bottom: 10px; text-align: center; font-weight: 600; }
-        .tab-content { display: none; } .tab-content.active { display: block; }
+        /* Cards */
+        .card{background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1.5px solid #f4dce9; border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 8px 25px #b55a921a; position: relative; overflow: hidden;}
+        .card::before{content: '✿'; position: absolute; top: -5px; right: -5px; font-size: 45px; color: #fce1ef; opacity: 0.7; transform: rotate(15deg);}
+        .card h2{font-size: 1rem; color: #642b78; margin-bottom: 15px; border-bottom: 1.5px dashed #eed1e3; padding-bottom: 10px; display: flex; align-items: center; gap: 6px; position: relative; z-index: 1;}
         
-        .login-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .login-overlay.open { display: flex; }
-        .login-box { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 320px; text-align: center; border: 1px solid var(--border-color); }
-        .chart-container { height: 180px; width: 100%; margin-top: 10px; }
+        /* Forms & Helper Text */
+        .form-group{margin-bottom: 12px; position: relative; z-index: 1;}
+        label{display: block; color: #684e70; font-size: 0.85rem; margin-bottom: 4px; font-weight: 600;}
+        input, select{width: 100%; background: #fffafd; border: 1.5px solid #e8cfe1; border-radius: 12px; padding: 10px 12px; color: var(--ink); font-size: 0.9rem; outline: none; transition: 0.2s;}
+        input:focus, select:focus{border-color: var(--pink); box-shadow: 0 0 0 3px #fce1ef; background: #fff;}
+        input[readonly]{background: #f3eaff; color: var(--muted); cursor: not-allowed;}
+        
+        button[type="submit"], .btn-save{width: 100%; background: linear-gradient(110deg, #e84f9a, #a64fc2); color: white; border: none; border-radius: 12px; padding: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px #d84d9828; transition: 0.2s; position: relative; z-index: 1;}
+        
+        /* Grids & Stats */
+        .grid-2{display: grid; grid-template-columns: 1fr 1fr; gap: 10px;}
+        .grid-3{display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;}
+        
+        .stat-box{background: linear-gradient(145deg, #fff0f7, #fffafd); border: 1px solid #f6d9e8; border-radius: 14px; padding: 12px 6px; text-align: center; box-shadow: inset 0 1px #fff; transition:0.2s;}
+        .stat-box.cost{background: linear-gradient(145deg, #f2eaff, #fffafd); border-color: #e6d8f6;}
+        .stat-box.profit{background: linear-gradient(145deg, #e1f8ef, #fffafd); border-color: #cceee0;}
+        .stat-box.loss{background: linear-gradient(145deg, #ffe8e8, #fffafd); border-color: #f6cccc;}
+        .stat-box.blue{background: linear-gradient(145deg, #e8f4fb, #fffafd); border-color: #cce6f6;}
+        .stat-box.clickable { cursor: pointer; }
+        .stat-box.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .stat-title{font-size: 0.7rem; color: #826b89; font-weight: 600; line-height: 1.2;}
+        .stat-value{font-size: 1.05rem; font-weight: 800; margin-top: 4px; color: #762d83;}
+        .stat-sub{font-size: 0.65rem; color: #555; margin-top: 3px; font-weight: 600;}
+        
+        .stat-box.cost .stat-value{color: #bd477a;} 
+        .stat-box.profit .stat-value{color: #218b70;} 
+        .stat-box.loss .stat-value{color: #d32f2f;}
+        .stat-box.blue .stat-value{color: #2980b9;}
+        
+        /* Tables */
+        .table-wrap{overflow-x: auto; border-radius: 12px; border: 1px solid #f4dce9; background: #fff;}
+        table{border-collapse: collapse; width: 100%; font-size: 0.8rem;}
+        th{background: #f8e7f2; color: #6a3675; font-weight: 700; padding: 10px 8px; text-align: left; border-bottom: 1px solid #f4dce9;}
+        td{padding: 10px 8px; text-align: left; border-bottom: 1px solid #f4dce9; vertical-align: middle;}
+        tr:last-child td{border-bottom: none;}
+        
+        .badge{border-radius: 20px; padding: 5px 10px; font-size: 0.7rem; color: white; font-weight: 700; white-space: nowrap; cursor: pointer; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .badge-Processing{background: var(--orange);} 
+        .badge-Delivered{background: var(--green);} 
+        .badge-Returned{background: var(--red);} 
+        
+        .action-btn{background: #fffafd; border: 1px solid #f4dce9; color: var(--plum); border-radius: 8px; padding: 5px 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; width: auto;}
+        
+        /* Nav Bar */
+        .nav-bar{position: fixed; bottom: 0; left: 0; right: 0; background: #fffafdf5; backdrop-filter: blur(16px); border-top: 1.5px solid #f0d4e5; display: flex; justify-content: space-around; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -5px 20px #60225a12;}
+        .nav-item{flex: 1; text-align: center; color: #8d7893; padding: 12px 2px; font-size: 0.75rem; cursor: pointer; font-weight: 600;}
+        .nav-item.active{color: var(--pink); border-top: 3px solid var(--pink); background: linear-gradient(#fff0f7, #fffafd); font-weight: 800;}
+        .nav-item.locked{display: none;}
+        .tab-content{display: none; animation: fadeIn 0.25s ease;} .tab-content.active{display: block;}
+        @keyframes fadeIn{from{opacity: 0; transform: translateY(5px);} to{opacity: 1; transform: translateY(0);}}
+        
+        /* Modals */
+        .modal-overlay{position: fixed; inset: 0; z-index: 5000; background: rgba(43, 18, 59, 0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 15px;}
+        .modal-overlay.open{display: flex;}
+        .modal-panel{background: var(--paper); border-radius: 20px; padding: 20px; width: 100%; max-width: 350px; box-shadow: 0 15px 40px #2b123b50; border: 1.5px solid var(--line);}
+        .modal-panel h2{color: var(--plum); margin-bottom: 15px; font-size: 1.1rem; display:flex; justify-content:space-between;}
+        
+        /* Warning Banner */
+        .warning-banner { display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); color: var(--red); padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 12px; text-align: center; font-weight:600;}
         
         /* Ranking List */
-        .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 0.85rem; }
+        .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eed1e3; font-size: 0.85rem; font-weight:600;}
         .rank-item:last-child { border-bottom: none; }
+
+        /* Chart Container */
+        .chart-container { position: relative; height: 180px; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">Reseller's Analytics</div>
-        <div>
-            <button class="btn-export" onclick="exportToCSV()">📥 এক্সেল</button>
-            <button id="loginBtn" class="btn-login" onclick="openLoginModal()">লগইন</button>
-            <button id="logoutBtn" class="btn-logout" onclick="logoutUser()">লগআউট</button>
+        <div class="brand-area">
+            <h1 id="appTitle">Reseller's Analytics</h1>
+        </div>
+        <div class="header-btns">
+            <button class="settings-btn" onclick="exportToCSV()" style="background:rgba(39, 164, 123, 0.2); border-color:#27a47b; color:white;">📥 এক্সেল</button>
+            <button id="loginBtn" class="settings-btn" onclick="openLoginModal()">🔒 লগইন</button>
+            <button id="logoutBtn" class="settings-btn" onclick="logoutUser()" style="display:none; background:rgba(227, 78, 129, 0.2); border-color:#e34e81;">লগআউট</button>
         </div>
     </header>
 
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-box">
-            <h3>অ্যাডমিন লগইন 🔒</h3>
-            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:15px;">এডিট করতে মোবাইল নম্বর দিন</p>
-            <input type="tel" id="loginPhone" placeholder="01XXXXXXXXX" style="text-align:center; margin-bottom:15px;">
-            <button type="submit" onclick="loginUser()" style="width:100%; background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">প্রবেশ</button>
+    <!-- Login Modal -->
+    <div id="loginOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <h2>🌸 অ্যাডমিন লগইন</h2>
+            <p>ডেটা এডিট করতে মোবাইল নম্বর দিন</p>
+            <input type="tel" id="loginPhone" placeholder="01XXXXXXXXX">
+            <button onclick="loginUser()">প্রবেশ করুন</button>
+            <button onclick="document.getElementById('loginOverlay').classList.remove('open')" style="background:#f3eaff; color:var(--plum); margin-top:10px; box-shadow:none;">বাতিল</button>
         </div>
     </div>
 
@@ -134,41 +176,51 @@
                 <option value="all">সামগ্রিক হিসাব (All Products)</option>
             </select>
 
-            <div class="card">
-                <h2>📊 আর্থিক সারসংক্ষেপ</h2>
-                <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-title">মোট বিক্রি</div><div class="stat-value text-primary" id="dash-sales">৳0</div></div>
-                    <div class="stat-box"><div class="stat-title">নিট লাভ</div><div class="stat-value" id="dash-net">৳0</div></div>
-                    <div class="stat-box"><div class="stat-title">প্রফিট মার্জিন</div><div class="stat-value" id="dash-margin">0%</div><div class="stat-sub" id="dash-margin-sub">বিনিয়োগ: ৳0</div></div>
-                    <div class="stat-box"><div class="stat-title">কুরিয়ার পেন্ডিং</div><div class="stat-value text-info" id="dash-courier-pending">৳0</div></div>
-                </div>
+            <!-- Block 1: Sales & Profit -->
+            <h3 style="font-size:0.85rem; color:var(--plum); margin-bottom:8px;">🟢 আয় ও মুনাফা</h3>
+            <div class="grid-3" style="margin-bottom:15px">
+                <div class="stat-box"><div class="stat-title">মোট বিক্রি</div><div class="stat-value" id="dash-sales">৳0</div><div class="stat-sub" id="dash-sales-sub">0 টি ডেলিভারি</div></div>
+                <div class="stat-box profit"><div class="stat-title">নিট লাভ</div><div class="stat-value" id="dash-net">৳0</div></div>
+                <div class="stat-box profit" id="margin-box"><div class="stat-title">প্রফিট মার্জিন</div><div class="stat-value" id="dash-margin">0%</div><div class="stat-sub" id="dash-margin-sub">বিনিয়োগ: ৳0</div></div>
             </div>
 
-            <div class="card">
-                <h2>💸 খরচের বিবরণ</h2>
-                <div class="stats-grid">
-                    <div class="stat-box"><div class="stat-title">মোট এড খরচ</div><div class="stat-value text-warning" id="dash-adcost">৳0</div><div class="stat-sub" id="dash-adcost-sub">(০টি অর্ডারের জন্য)</div></div>
-                    <div class="stat-box"><div class="stat-title">সাপ্লায়ার খরচ</div><div class="stat-value text-danger" id="dash-supplier-cost">৳0</div></div>
-                    <div class="stat-box"><div class="stat-title">মোট রিটার্ন লস</div><div class="stat-value text-danger" id="dash-return-loss">৳0</div></div>
-                </div>
+            <!-- Block 2: Expenses -->
+            <h3 style="font-size:0.85rem; color:var(--plum); margin-bottom:8px;">🔴 খরচ</h3>
+            <div class="grid-3" style="margin-bottom:15px">
+                <div class="stat-box cost"><div class="stat-title">মোট এড খরচ</div><div class="stat-value" id="dash-adcost">৳0</div><div class="stat-sub" id="dash-adcost-sub">(0টি অর্ডারের জন্য)</div></div>
+                <div class="stat-box loss"><div class="stat-title">মোট রিটার্ন চার্জ</div><div class="stat-value" id="dash-total-return">৳0</div><div class="stat-sub">আপনি দিয়েছেন</div></div>
+                <div class="stat-box cost"><div class="stat-title">গড় এড কস্ট</div><div class="stat-value" id="dash-avg-adcost">৳0</div><div class="stat-sub">প্রতি অর্ডার</div></div>
             </div>
 
-            <div class="card">
-                <h2>📈 অর্ডার স্ট্যাটাস (লিস্ট দেখতে ক্লিক)</h2>
-                <div class="stats-grid">
-                    <div class="stat-box" style="cursor:pointer" onclick="openStatusList('Processing')"><div class="stat-title">প্রসেসিং</div><div class="stat-value text-warning" id="dash-processing">0</div></div>
-                    <div class="stat-box" style="cursor:pointer" onclick="openStatusList('Delivered')"><div class="stat-title">ডেলিভারি</div><div class="stat-value text-success" id="dash-delivered">0</div></div>
-                    <div class="stat-box" style="cursor:pointer" onclick="openStatusList('Returned')"><div class="stat-title">রিটার্ন</div><div class="stat-value text-danger" id="dash-returned">0</div><div class="stat-sub" id="dash-return-val">(অর্ডার ভ্যালু)</div></div>
-                </div>
+            <!-- Advanced Block: Courier & Supplier -->
+            <div class="grid-2" style="margin-bottom:15px">
+                <div class="stat-box blue"><div class="stat-title">কুরিয়ার পেন্ডিং ক্যাশ</div><div class="stat-value" id="dash-courier-pending">৳0</div></div>
+                <div class="stat-box loss"><div class="stat-title">মোট সাপ্লায়ার খরচ</div><div class="stat-value" id="dash-supplier-cost">৳0</div></div>
             </div>
 
-            <div class="grid-2">
-                <div class="card">
-                    <h2>🏆 টপ লাভজনক প্রোডাক্ট</h2>
+            <!-- Block 3: Operations -->
+            <h3 style="font-size:0.85rem; color:var(--plum); margin-bottom:8px;">🔵 অর্ডার স্ট্যাটাস (লিস্ট দেখতে ক্লিক)</h3>
+            <div class="grid-3" style="margin-bottom:15px">
+                <div class="stat-box clickable" onclick="openStatusList('Processing')"><div class="stat-title">প্রসেসিং</div><div class="stat-value" id="dash-processing">0</div><div class="stat-sub" id="dash-processing-amt">৳0</div></div>
+                <div class="stat-box profit clickable" onclick="openStatusList('Delivered')"><div class="stat-title">ডেলিভারি</div><div class="stat-value" id="dash-delivered">0</div><div class="stat-sub" id="dash-delivered-amt">৳0</div></div>
+                <div class="stat-box loss clickable" onclick="openStatusList('Returned')"><div class="stat-title">রিটার্ন</div><div class="stat-value" id="dash-returned">0</div><div class="stat-sub" id="dash-returned-amt">৳0</div></div>
+            </div>
+
+            <!-- Block 4: Performance -->
+            <h3 style="font-size:0.85rem; color:var(--plum); margin-bottom:8px;">🎯 পারফরম্যান্স</h3>
+            <div class="grid-2" style="margin-bottom:15px">
+                <div class="stat-box"><div class="stat-title">সাকসেস রেট</div><div class="stat-value" id="dash-success-rate">0%</div></div>
+                <div class="stat-box blue"><div class="stat-title">ROAS (এড-এর ওপর)</div><div class="stat-value" id="dash-roas">0.0x</div><div class="stat-sub">১৳ এডে বিক্রি</div></div>
+            </div>
+
+            <!-- Block 5: Rankings & Chart -->
+            <div class="grid-2" style="margin-bottom:15px">
+                <div class="card" style="margin-bottom:0;">
+                    <h2 style="font-size:0.9rem;">🏆 টপ লাভজনক</h2>
                     <div id="topProfitList"></div>
                 </div>
-                <div class="card">
-                    <h2>⚠️ টপ ক্ষতিকর প্রোডাক্ট</h2>
+                <div class="card" style="margin-bottom:0;">
+                    <h2 style="font-size:0.9rem;">⚠️ টপ ক্ষতিকর</h2>
                     <div id="topLossList"></div>
                 </div>
             </div>
@@ -224,7 +276,7 @@
                         </select>
                     </div>
                     <button type="submit" id="saveOrderBtn">সেভ করুন</button>
-                    <button type="button" onclick="cancelEdit()" id="cancelEditBtn" style="display:none; width:100%; background:#334155; color:white; border:none; padding:10px; border-radius:8px; margin-top:5px; font-weight:600; cursor:pointer;">বাতিল</button>
+                    <button type="button" onclick="cancelEdit()" id="cancelEditBtn" style="display:none; width:100%; background:#f3eaff; color:var(--plum); border:none; padding:10px; border-radius:10px; margin-top:8px; font-weight:700; cursor:pointer;">বাতিল</button>
                 </form>
             </div>
 
@@ -251,7 +303,7 @@
                         <div class="form-group"><label>মোট এড খরচ (৳)</label><input type="number" id="prodAdCost" required></div>
                     </div>
                     <button type="submit" id="saveProdBtn">সেভ করুন</button>
-                    <button type="button" onclick="cancelProdEdit()" id="cancelProdBtn" style="display:none; width:100%; background:#334155; color:white; border:none; padding:10px; border-radius:8px; margin-top:5px; font-weight:600; cursor:pointer;">বাতিল</button>
+                    <button type="button" onclick="cancelProdEdit()" id="cancelProdBtn" style="display:none; width:100%; background:#f3eaff; color:var(--plum); border:none; padding:10px; border-radius:10px; margin-top:8px; font-weight:700; cursor:pointer;">বাতিল</button>
                 </form>
             </div>
             <div class="card">
@@ -275,35 +327,33 @@
 
     <!-- Modals -->
     <div id="statusModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="modalTitle">লিস্ট</h3><button onclick="document.getElementById('statusModal').classList.remove('open')" style="background:none; border:none; color:white; font-size:1.2rem;">&times;</button></div>
-            <div class="modal-body" id="modalListContainer"></div>
-            <div style="padding:10px; text-align:center; font-size:0.75rem; color:var(--text-muted); border-top:1px solid var(--border-color);">🔒 এডিট করতে লগইন করুন</div>
+        <div class="modal-panel">
+            <h2><span id="modalTitle">লিস্ট</span> <button onclick="document.getElementById('statusModal').classList.remove('open')" style="background:none; border:none; color:var(--plum); font-size:1.2rem; cursor:pointer;">&times;</button></h2>
+            <div id="modalListContainer" style="max-height: 50vh; overflow-y:auto;"></div>
+            <div style="padding:10px; text-align:center; font-size:0.75rem; color:var(--muted); border-top:1px solid var(--line); margin-top:10px;">🔒 এডিট করতে লগইন করুন</div>
         </div>
     </div>
 
     <div id="quickStatusModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header"><h3>স্ট্যাটাস পরিবর্তন</h3><button onclick="document.getElementById('quickStatusModal').classList.remove('open')" style="background:none; border:none; color:white; font-size:1.2rem;">&times;</button></div>
-            <div class="modal-body">
-                <input type="hidden" id="qsOrderId">
-                <div class="form-group">
-                    <label>নতুন স্ট্যাটাস</label>
-                    <select id="qsStatus" onchange="toggleQsReturn()">
-                        <option value="Processing">Processing</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Returned">Returned</option>
-                    </select>
-                </div>
-                <div class="form-group" id="qsReturnDiv" style="display:none;">
-                    <label>রিটার্ন চার্জ</label>
-                    <select id="qsReturnPayer">
-                        <option value="customer">কাস্টমার দিবে</option>
-                        <option value="me">আমি দিব (লস)</option>
-                    </select>
-                </div>
-                <button onclick="saveQuickStatus()" style="width:100%; background:var(--success); color:white; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer; margin-top:10px;">আপডেট</button>
+        <div class="modal-panel">
+            <h2>স্ট্যাটাস পরিবর্তন <button onclick="document.getElementById('quickStatusModal').classList.remove('open')" style="background:none; border:none; color:var(--plum); font-size:1.2rem; cursor:pointer;">&times;</button></h2>
+            <input type="hidden" id="qsOrderId">
+            <div class="form-group">
+                <label>নতুন স্ট্যাটাস</label>
+                <select id="qsStatus" onchange="toggleQsReturn()">
+                    <option value="Processing">Processing</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Returned">Returned</option>
+                </select>
             </div>
+            <div class="form-group" id="qsReturnDiv" style="display:none;">
+                <label>রিটার্ন চার্জ</label>
+                <select id="qsReturnPayer">
+                    <option value="customer">কাস্টমার দিবে</option>
+                    <option value="me">আমি দিব (লস)</option>
+                </select>
+            </div>
+            <button onclick="saveQuickStatus()" style="width:100%; background:var(--green); color:white; border:none; padding:12px; border-radius:10px; font-weight:700; cursor:pointer; margin-top:10px;">আপডেট করুন</button>
         </div>
     </div>
 
@@ -352,7 +402,7 @@
         // --- NAV & FILTERS ---
         function switchTab(tabId, element) {
             if(localStorage.getItem('analytics_auth') !== 'true' && (tabId === 'tab-entry' || tabId === 'tab-master')) {
-                alert("লগইন করুন!"); openLoginModal(); return;
+                alert("এই পেজে ঢুকতে লগইন করুন!"); openLoginModal(); return;
             }
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -399,7 +449,7 @@
             masterData.forEach(p => {
                 tbody.innerHTML += `<tr>
                     <td>${p.name}</td><td>৳${p.cost}</td><td>৳${p.adCost}</td>
-                    <td><button class="action-btn" onclick="editProd('${p.id}')">✏️</button><button class="action-btn" onclick="delProd('${p.id}')">❌</button></td>
+                    <td><button class="action-btn" onclick="editProd('${p.id}')">✏️</button><button class="action-btn" onclick="delProd('${p.id}')" style="color:var(--red);">❌</button></td>
                 </tr>`;
             });
         }
@@ -426,10 +476,8 @@
         function calcAdCost() {
             const p = masterData.find(x => x.id === $('entryProduct').value);
             if(p) { 
-                // গড় এড কস্ট বের করা (মোট এড কস্ট / মোট অর্ডার সংখ্যা)
                 const totalOrders = orderData.filter(o => o.productId === p.id).length || 1;
-                const avgAdCost = p.adCost / totalOrders;
-                $('adCost').value = avgAdCost.toFixed(0); 
+                $('adCost').value = (p.adCost / totalOrders).toFixed(0); 
                 checkWarning(); 
             }
         }
@@ -473,10 +521,10 @@
                 
                 if(o.status === 'Delivered') {
                     const profit = o.salePrice - (p.cost + o.adCost);
-                    profitText = `<span class="${profit>=0?'text-success':'text-danger'}">৳${profit}</span>`;
+                    profitText = `<span style="color:${profit>=0?'var(--green)':'var(--red)'};font-weight:bold;">৳${profit}</span>`;
                 } else if(o.status === 'Returned') {
                     const loss = o.adCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
-                    profitText = `<span class="text-danger">-৳${loss}</span>`;
+                    profitText = `<span style="color:var(--red);font-weight:bold;">-৳${loss}</span>`;
                 }
 
                 tbody.innerHTML += `<tr>
@@ -487,7 +535,7 @@
                     <td><span class="badge ${badgeClass}" onclick="openQuickStatus('${o.id}','${o.status}','${o.returnPayer}')">${o.status}</span></td>
                     <td>
                         <button class="action-btn" onclick="editOrder('${o.id}')">✏️</button>
-                        <button class="action-btn" onclick="delOrder('${o.id}')">❌</button>
+                        <button class="action-btn" onclick="delOrder('${o.id}')" style="color:var(--red);">❌</button>
                     </td>
                 </tr>`;
             });
@@ -532,7 +580,7 @@
 
             let sales=0, net=0, adCost=0, supCost=0, pending=0, rLoss=0, rVal=0;
             let proc=0, deliv=0, ret=0;
-            let productProfits = {}; // র্যাংকিং এর জন্য
+            let productProfits = {};
 
             filtered.forEach(o => {
                 const p = masterData.find(x => x.id === o.productId); if(!p) return;
@@ -554,14 +602,19 @@
 
             const totalInv = adCost + supCost;
             const margin = totalInv > 0 ? ((net / totalInv)*100).toFixed(1) : 0;
+            const roas = adCost > 0 ? (sales / adCost).toFixed(2) : 0;
+            const successRate = filtered.length > 0 ? ((deliv / filtered.length)*100).toFixed(0) : 0;
+            const avgAdCost = filtered.length > 0 ? (adCost / filtered.length).toFixed(0) : 0;
 
-            // আপডেট UI
+            // Update UI
             $('dash-sales').innerText = '৳'+sales.toLocaleString();
+            $('dash-sales-sub').innerText = `${deliv} টি ডেলিভারি`;
             $('dash-net').innerText = '৳'+net.toLocaleString();
-            $('dash-net').className = net>=0 ? 'stat-value text-success' : 'stat-value text-danger';
+            $('dash-net').style.color = net>=0 ? 'var(--green)' : 'var(--red)';
             
             $('dash-margin').innerText = margin+'%'; 
-            $('dash-margin').className = margin>=0 ? 'stat-value text-success' : 'stat-value text-danger';
+            $('dash-margin').style.color = margin>=0 ? 'var(--green)' : 'var(--red)';
+            $('margin-box').className = margin>=0 ? 'stat-box profit' : 'stat-box loss';
             $('dash-margin-sub').innerText = `বিনিয়োগ: ৳${totalInv.toLocaleString()}`;
             
             $('dash-courier-pending').innerText = '৳'+pending.toLocaleString();
@@ -569,13 +622,22 @@
             $('dash-adcost').innerText = '৳'+adCost.toLocaleString(); 
             $('dash-adcost-sub').innerText = `(${filtered.length}টি অর্ডারের জন্য)`;
             
+            $('dash-total-return').innerText = '৳'+rLoss.toLocaleString();
+            $('dash-avg-adcost').innerText = '৳'+avgAdCost;
+            
             $('dash-supplier-cost').innerText = '৳'+supCost.toLocaleString(); 
-            $('dash-return-loss').innerText = '৳'+rLoss.toLocaleString();
             
             $('dash-processing').innerText = proc; 
+            $('dash-processing-amt').innerText = '৳' + (filtered.filter(o=>o.status==='Processing').reduce((a,b)=>a+b.salePrice,0)).toLocaleString();
+            
             $('dash-delivered').innerText = deliv; 
+            $('dash-delivered-amt').innerText = '৳' + sales.toLocaleString();
+            
             $('dash-returned').innerText = ret;
-            $('dash-return-val').innerText = `৳${rVal.toLocaleString()} (অর্ডার ভ্যালু)`;
+            $('dash-returned-amt').innerText = '৳' + rVal.toLocaleString();
+            
+            $('dash-success-rate').innerText = successRate + '%';
+            $('dash-roas').innerText = roas + 'x';
 
             updateRankings(productProfits);
             drawChart(filtered);
@@ -587,14 +649,14 @@
             
             let topHtml = '', lossHtml = '';
             arr.slice(0, 3).forEach(p => {
-                topHtml += `<div class="rank-item"><span>${p.name}</span><span class="text-success">৳${p.profit.toLocaleString()}</span></div>`;
+                topHtml += `<div class="rank-item"><span>${p.name}</span><span style="color:var(--green);">৳${p.profit.toLocaleString()}</span></div>`;
             });
             arr.slice(-3).reverse().forEach(p => {
-                if(p.profit < 0) lossHtml += `<div class="rank-item"><span>${p.name}</span><span class="text-danger">৳${p.profit.toLocaleString()}</span></div>`;
+                if(p.profit < 0) lossHtml += `<div class="rank-item"><span>${p.name}</span><span style="color:var(--red);">৳${p.profit.toLocaleString()}</span></div>`;
             });
 
-            $('topProfitList').innerHTML = topHtml || '<div style="font-size:0.8rem; color:#94a3b8;">ডেটা নেই</div>';
-            $('topLossList').innerHTML = lossHtml || '<div style="font-size:0.8rem; color:#94a3b8;">কোনো লস প্রোডাক্ট নেই</div>';
+            $('topProfitList').innerHTML = topHtml || '<div style="font-size:0.8rem; color:var(--muted);">ডেটা নেই</div>';
+            $('topLossList').innerHTML = lossHtml || '<div style="font-size:0.8rem; color:var(--muted);">কোনো লস প্রোডাক্ট নেই</div>';
         }
 
         function drawChart(orders) {
@@ -616,8 +678,8 @@
             }
             if(chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
-                type: 'line', data: { labels, datasets: [{ data, borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointBackgroundColor: '#10b981' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+                type: 'line', data: { labels, datasets: [{ data, borderColor: '#e84f9a', borderWidth: 2, tension: 0.3, pointBackgroundColor: '#743477' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#f1dce9' }, ticks: { color: '#806b89' } }, x: { grid: { display: false }, ticks: { color: '#806b89' } } } }
             });
         }
 
@@ -626,11 +688,11 @@
             $('modalTitle').innerText = status + " লিস্ট";
             const cont = $('modalListContainer'); cont.innerHTML = '';
             const ords = orderData.filter(o => o.status === status);
-            if(!ords.length) cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">খালি</div>';
+            if(!ords.length) cont.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted);">খালি</div>';
             else ords.forEach(o => {
-                cont.innerHTML += `<div style="padding:10px 15px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between;">
-                    <div><b>${o.custName}</b><br><small style="color:#94a3b8">${o.custPhone}</small></div>
-                    <div style="font-weight:bold; color:var(--primary);">৳${o.salePrice}</div>
+                cont.innerHTML += `<div style="padding:10px 0; border-bottom:1px dashed var(--line); display:flex; justify-content:space-between;">
+                    <div><b>${o.custName}</b><br><small style="color:var(--muted)">${o.custPhone}</small></div>
+                    <div style="font-weight:bold; color:var(--plum);">৳${o.salePrice}</div>
                 </div>`;
             });
             $('statusModal').classList.add('open');
@@ -640,7 +702,7 @@
         function exportToCSV() {
             if(!orderData.length) return alert("ডাউনলোড করার মতো কোনো ডেটা নেই!");
             
-            let csvContent = "\uFEFF"; // বাংলা ফন্ট সাপোর্টের জন্য
+            let csvContent = "\uFEFF"; 
             csvContent += "Date,Customer,Phone,Product,Status,Sale Price,Ad Cost,Profit/Loss\n";
 
             orderData.forEach(o => {
@@ -657,7 +719,7 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
-            link.setAttribute("download", `Reseller_Analytics_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.csv`);
+            link.setAttribute("download", `Analytics_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
