@@ -282,6 +282,8 @@ function updateDashboard() {
 
     let filtered = orderData.filter(o => {
         if(productFilter !== 'all' && o.productId !== productFilter) return false;
+        if(currentTimeFilter === 'all') return true; // সব সময়
+
         const orderDate = new Date(o.timestamp); orderDate.setHours(0,0,0,0);
         if(currentTimeFilter === 'today') return orderDate.getTime() === now.getTime();
         if(currentTimeFilter === 'week') { const w = new Date(now); w.setDate(now.getDate() - 7); return orderDate >= w; }
@@ -333,19 +335,19 @@ function updateDashboard() {
     $('dash-gross-profit').innerText = '৳'+grossProfit.toLocaleString();
     $('dash-gross-sub').innerText = `${deliv} টি ডেলিভারি`;
     
-    // মোট লস বা লাভ আপডেট
+    // মোট লস আপডেট (বাগ ফিক্স করা হয়েছে)
     if(calculatedTotalLoss > 0) {
         $('dash-net').className = 'stat-value text-loss glow-loss';
         $('dash-net').innerText = '৳' + calculatedTotalLoss.toLocaleString();
-        $('margin-box').previousElementSibling.innerText = 'মোট লস'; 
+        $('dash-net-title').innerText = 'মোট লস'; 
     } else if (calculatedTotalLoss < 0) {
         $('dash-net').className = 'stat-value text-profit glow-profit';
         $('dash-net').innerText = '৳' + Math.abs(calculatedTotalLoss).toLocaleString();
-        $('margin-box').previousElementSibling.innerText = 'মোট লাভ'; 
+        $('dash-net-title').innerText = 'মোট লাভ'; 
     } else {
         $('dash-net').className = 'stat-value';
         $('dash-net').innerText = '৳0';
-        $('margin-box').previousElementSibling.innerText = 'মোট লস';
+        $('dash-net-title').innerText = 'মোট লস/লাভ';
     }
     $('dash-net').style.fontSize = '1.1rem';
 
@@ -375,9 +377,7 @@ function updateDashboard() {
     $('dash-roas').innerText = roas + 'x';
 
     drawChart(filtered);
-}
-
-function drawChart(orders) {
+}function drawChart(orders) {
     const ctx = document.getElementById('profitChart').getContext('2d');
     let labels = [], data = [];
     for(let i=6; i>=0; i--) {
