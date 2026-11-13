@@ -53,7 +53,7 @@
             <h3 style="font-size:0.85rem; color:var(--text-main); margin-bottom:8px;"><span class="icon-anim">💰</span> আয় ও মুনাফা</h3>
             <div class="grid-3" style="margin-bottom:15px">
                 <div class="stat-box"><div class="stat-title">মোট লাভ</div><div class="stat-value text-primary" id="dash-gross-profit">৳0</div><div class="stat-sub" id="dash-gross-sub">ডেলিভারি</div></div>
-                <div class="stat-box"><div class="stat-title">নিট লাভ</div><div class="stat-value" id="dash-net">৳0</div></div>
+                <div class="stat-box"><div class="stat-title">মোট লস</div><div class="stat-value" id="dash-net">৳0</div></div>
                 <div class="stat-box" id="margin-box"><div class="stat-title">প্রফিট মার্জিন</div><div class="stat-value" id="dash-margin">0%</div><div class="stat-sub" id="dash-margin-sub">বিনিয়োগ: ৳0</div></div>
             </div>
 
@@ -67,10 +67,15 @@
 
             <!-- Block 3: Operations -->
             <h3 style="font-size:0.85rem; color:var(--text-main); margin-bottom:8px;"><span class="icon-anim">📦</span> অর্ডার স্ট্যাটাস (লিস্ট দেখতে ক্লিক)</h3>
-            <div class="grid-3" style="margin-bottom:15px">
-                <div class="stat-box clickable" onclick="openStatusList('Processing')"><div class="stat-title">প্রসেসিং</div><div class="stat-value text-warning" id="dash-processing">0</div><div class="stat-sub" id="dash-processing-amt">৳0</div></div>
-                <div class="stat-box clickable" onclick="openStatusList('Delivered')"><div class="stat-title">ডেলিভারি</div><div class="stat-value text-profit" id="dash-delivered">0</div><div class="stat-sub" id="dash-delivered-amt">৳0</div></div>
-                <div class="stat-box clickable" onclick="openStatusList('Returned')"><div class="stat-title">রিটার্ন</div><div class="stat-value text-loss" id="dash-returned">0</div><div class="stat-sub" id="dash-returned-amt">৳0</div></div>
+            
+            <div class="grid-2" style="margin-bottom:10px">
+                <div class="stat-box"><div class="stat-title">মোট অর্ডার</div><div class="stat-value text-primary" id="dash-total-orders">0 টি</div></div>
+                <div class="stat-box clickable" onclick="openStatusList('Processing')"><div class="stat-title">প্রসেসিং</div><div class="stat-value text-warning" id="dash-processing">0</div><div class="stat-sub" id="dash-processing-amt">৳0 (সম্ভাব্য লাভ)</div></div>
+            </div>
+            
+            <div class="grid-2" style="margin-bottom:15px">
+                <div class="stat-box clickable" onclick="openStatusList('Delivered')"><div class="stat-title">ডেলিভারি</div><div class="stat-value text-profit" id="dash-delivered">0</div><div class="stat-sub" id="dash-delivered-amt">৳0 (প্রফিট)</div></div>
+                <div class="stat-box clickable" onclick="openStatusList('Returned')"><div class="stat-title">রিটার্ন</div><div class="stat-value text-loss" id="dash-returned">0</div><div class="stat-sub" id="dash-returned-amt">৳0 (লস)</div></div>
             </div>
 
             <!-- Block 4: Performance -->
