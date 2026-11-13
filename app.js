@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAhK8f7kxo6RcqD-Ng8tWquqci8XE6qcgg", // আপনার নতুন key
+    apiKey: "AIzaSyAhK8f7kxo6RcqD-Ng8tWquqci8XE6qcgg",
     authDomain: "reseller-s-cash-analysis.firebaseapp.com",
     projectId: "reseller-s-cash-analysis",
     storageBucket: "reseller-s-cash-analysis.firebasestorage.app",
@@ -112,7 +112,6 @@ function renderDropdowns() {
 }
 
 // --- HELPER: DYNAMIC AD COST ---
-// প্রতিটি প্রোডাক্টের বর্তমান মোট অর্ডার সংখ্যা দিয়ে এড কস্ট ভাগ করা হচ্ছে
 function getProductAdCost(productId) {
     const p = masterData.find(x => x.id === productId);
     if (!p) return 0;
@@ -174,7 +173,7 @@ function checkWarning() {
     const p = masterData.find(x => x.id === $('entryProduct').value);
     const sale = Number($('salePrice').value);
     if(p && sale > 0) {
-        const cost = p.cost + getProductAdCost(p.id); // লাইভ এড কস্ট
+        const cost = p.cost + getProductAdCost(p.id);
         if(sale < cost) {
             $('warningBanner').style.display = 'block';
             $('warningBanner').innerHTML = `⚠️ সতর্কতা: এই দামে অর্ডার নিলে আপনার <b>৳${(cost - sale).toFixed(0)}</b> লস হবে!`;
@@ -199,7 +198,6 @@ $('orderForm').addEventListener('submit', async (e) => {
         status: status, returnPayer: status === 'Returned' ? $('returnPayer').value : 'none',
         timestamp: id ? orderData.find(o => o.id === id).timestamp : timestamp,
         userId: currentUserId
-        // এখানে adCost আর সেভ করা হচ্ছে না, এটি ডাইনামিকভাবে হিসাব হবে
     };
     
     if(id) {
@@ -219,7 +217,7 @@ function renderOrders() {
         let profitText = '-', badgeClass = `badge-${o.status}`;
         
         if(p) {
-            const adCost = getProductAdCost(p.id); // ডাইনামিক এড কস্ট
+            const adCost = getProductAdCost(p.id);
             if(o.status === 'Delivered') {
                 const profit = o.salePrice - (p.cost + adCost);
                 profitText = `<span class="${profit>=0?'text-profit':'text-loss'}" style="font-weight:bold;">৳${profit.toFixed(0)}</span>`;
@@ -249,7 +247,7 @@ function editOrder(id) {
     $('orderDate').value = new Date(o.timestamp).toISOString().split('T')[0]; 
     $('custName').value = o.custName; $('custPhone').value = o.custPhone;
     $('entryProduct').value = o.productId; $('salePrice').value = o.salePrice; 
-    $('adCost').value = getProductAdCost(o.productId).toFixed(0); // ডাইনামিক এড কস্ট
+    $('adCost').value = getProductAdCost(o.productId).toFixed(0);
     $('deliveryArea').value = o.deliveryArea; $('orderStatus').value = o.status; toggleReturn();
     if(o.status === 'Returned') $('returnPayer').value = o.returnPayer;
     $('saveOrderBtn').innerText = 'আপডেট'; $('cancelEditBtn').style.display = 'block'; window.scrollTo(0,0);
@@ -291,24 +289,41 @@ function updateDashboard() {
         return true; 
     });
 
-    let grossProfit=0, net=0, adCost=0, rLoss=0, rVal=0, proc=0, deliv=0, ret=0;
+    let grossProfit=0, net=0, adCost=0, totalReturnChargeMe=0, rVal=0, proc=0, deliv=0, ret=0;
+    let procProfit=0, delivProfit=0, retLoss=0; 
 
     filtered.forEach(o => {
         const p = masterData.find(x => x.id === o.productId); if(!p) return;
         
-        const currentAdCost = getProductAdCost(p.id); // ডাইনামিক এড কস্ট
+        const currentAdCost = getProductAdCost(p.id); 
         adCost += currentAdCost;
 
-        if(o.status === 'Processing') proc++;
+        if(o.status === 'Processing') {
+            proc++;
+            procProfit += (o.salePrice - (p.cost + currentAdCost));
+        }
         if(o.status === 'Delivered') {
-            deliv++; grossProfit += (o.salePrice - p.cost); net += (o.salePrice - (p.cost + currentAdCost)); 
+            deliv++; 
+            grossProfit += (o.salePrice - p.cost); 
+            let oNet = (o.salePrice - (p.cost + currentAdCost));
+            net += oNet; 
+            delivProfit += oNet; 
         }
         if(o.status === 'Returned') {
-            ret++; rVal += o.salePrice; 
-            let loss = currentAdCost + (o.returnPayer === 'me' ? o.deliveryArea : 0);
-            rLoss += loss; net -= loss;
+            ret++; 
+            rVal += o.salePrice; 
+            let loss = currentAdCost; 
+            if(o.returnPayer === 'me') {
+                loss += o.deliveryArea;
+                totalReturnChargeMe += o.deliveryArea; 
+            }
+            net -= loss;
+            retLoss += loss; 
         }
     });
+
+    // মোট লস = এডকস্ট - মোট লাভ + রিটার্ন চার্জ (আমি দিলে)
+    const calculatedTotalLoss = adCost - grossProfit + totalReturnChargeMe;
 
     const margin = adCost > 0 ? ((net / adCost) * 100).toFixed(1) : 0; 
     const roas = adCost > 0 ? (grossProfit / adCost).toFixed(2) : 0; 
@@ -317,23 +332,45 @@ function updateDashboard() {
 
     $('dash-gross-profit').innerText = '৳'+grossProfit.toLocaleString();
     $('dash-gross-sub').innerText = `${deliv} টি ডেলিভারি`;
-    $('dash-net').innerText = '৳'+net.toLocaleString();
-    $('dash-net').className = net>=0 ? 'stat-value text-profit glow-profit' : 'stat-value text-loss glow-loss';
-    $('dash-net').style.fontSize = '1.2rem';
+    
+    // মোট লস বা লাভ আপডেট
+    if(calculatedTotalLoss > 0) {
+        $('dash-net').className = 'stat-value text-loss glow-loss';
+        $('dash-net').innerText = '৳' + calculatedTotalLoss.toLocaleString();
+        $('margin-box').previousElementSibling.innerText = 'মোট লস'; 
+    } else if (calculatedTotalLoss < 0) {
+        $('dash-net').className = 'stat-value text-profit glow-profit';
+        $('dash-net').innerText = '৳' + Math.abs(calculatedTotalLoss).toLocaleString();
+        $('margin-box').previousElementSibling.innerText = 'মোট লাভ'; 
+    } else {
+        $('dash-net').className = 'stat-value';
+        $('dash-net').innerText = '৳0';
+        $('margin-box').previousElementSibling.innerText = 'মোট লস';
+    }
+    $('dash-net').style.fontSize = '1.1rem';
+
     $('dash-margin').innerText = margin+'%'; 
     $('dash-margin').className = margin>=0 ? 'stat-value text-profit' : 'stat-value text-loss';
     $('margin-box').style.border = margin>=0 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)';
     $('dash-margin-sub').innerText = `বিনিয়োগ: ৳${adCost.toLocaleString()}`; 
+    
     $('dash-adcost').innerText = '৳'+adCost.toLocaleString(); 
     $('dash-adcost-sub').innerText = `(${filtered.length}টি অর্ডারের জন্য)`;
-    $('dash-total-return').innerText = '৳'+rLoss.toLocaleString();
+    $('dash-total-return').innerText = '৳'+totalReturnChargeMe.toLocaleString(); 
     $('dash-avg-adcost').innerText = '৳'+avgAdCost;
+    
+    // স্ট্যাটাস আপডেট
+    $('dash-total-orders').innerText = filtered.length + ' টি';
+    
     $('dash-processing').innerText = proc; 
-    $('dash-processing-amt').innerText = '৳' + (filtered.filter(o=>o.status==='Processing').reduce((a,b)=>a+b.salePrice,0)).toLocaleString();
+    $('dash-processing-amt').innerText = '৳' + procProfit.toLocaleString() + ' (সম্ভাব্য লাভ)';
+    
     $('dash-delivered').innerText = deliv; 
-    $('dash-delivered-amt').innerText = '৳' + (filtered.filter(o=>o.status==='Delivered').reduce((a,b)=>a+b.salePrice,0)).toLocaleString();
+    $('dash-delivered-amt').innerText = '৳' + delivProfit.toLocaleString() + ' (প্রফিট)';
+    
     $('dash-returned').innerText = ret;
-    $('dash-returned-amt').innerText = '৳' + rVal.toLocaleString();
+    $('dash-returned-amt').innerText = '-৳' + retLoss.toLocaleString() + ' (লস)';
+    
     $('dash-success-rate').innerText = successRate + '%';
     $('dash-roas').innerText = roas + 'x';
 
@@ -351,7 +388,7 @@ function drawChart(orders) {
             const od = new Date(o.timestamp);
             if(od.getDate()===d.getDate() && od.getMonth()===d.getMonth()) {
                 const p = masterData.find(x=>x.id===o.productId); if(!p) return;
-                const adC = getProductAdCost(p.id); // ডাইনামিক
+                const adC = getProductAdCost(p.id);
                 if(o.status==='Delivered') dayNet += (o.salePrice - (p.cost + adC));
                 else if(o.status==='Returned') dayNet -= (adC + (o.returnPayer==='me'?o.deliveryArea:0));
             }
